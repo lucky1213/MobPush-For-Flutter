@@ -2,6 +2,7 @@ package com.mob.flutter.mobpush.impl;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 
 import com.mob.flutter.mobpush.MobpushPlugin;
 import com.mob.pushsdk.MobPush;
@@ -14,6 +15,7 @@ import com.mob.tools.utils.Hashon;
 import org.json.JSONArray;
 
 import java.util.HashMap;
+import java.util.Set;
 
 import io.flutter.plugin.common.EventChannel;
 
@@ -52,6 +54,7 @@ public class StreamHandlerImpl implements EventChannel.StreamHandler, OnRemoveRe
             public void onNotifyMessageOpenedReceive(Context context, MobPushNotifyMessage mobPushNotifyMessage) {
                 HashMap<String, Object> map = new HashMap<>();
                 map.put("action", 2);
+               
                 map.put("result", hashon.fromJson(hashon.fromObject(mobPushNotifyMessage)));
                 eventSink.success(hashon.fromHashMap(map));
             }
@@ -99,10 +102,17 @@ public class StreamHandlerImpl implements EventChannel.StreamHandler, OnRemoveRe
             if (intent != null) {
                 android.util.Log.d("| MainActivity | - ", "dealPushResponse: 5");
                 MobPush.notificationClickAck(intent);
-                JSONArray parseMainPluginPushIntent = MobPushUtils.parseMainPluginPushIntent(intent);
+                Bundle bundle = intent.getExtras();
+                Set<String> keySet = bundle.keySet();
+                HashMap<String, Object> json = new HashMap<>();
+                for (String key: keySet) {
+                    Object value = bundle.get(key);
+                    android.util.Log.d("| MainActivity | - ", ">>>>>>key: "+key+", object: "+value);
+                    json.put(key, value);
+                }
                 HashMap<String, Object> map = new HashMap<>();
                 map.put("action", 3);
-                map.put("result", hashon.fromJson(hashon.fromObject(parseMainPluginPushIntent)));
+                map.put("result", hashon.fromJson(hashon.fromObject(json)));
                 if(eventSink != null) {
                     eventSink.success(hashon.fromHashMap(map));
                 }
